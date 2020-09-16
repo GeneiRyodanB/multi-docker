@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t geneiryodan/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run geneiryodan/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t geneiryodan/multi-client ./client
+  - docker build -t geneiryodan/multi-nginx ./nginx
+  - docker build -t geneiryodan/multi-server ./server
+  - docker build -t geneiryodan/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push geneiryodan/multi-client
+  - docker push geneiryodan/multi-nginx
+  - docker push geneiryodan/multi-server
+  - docker push geneiryodan/multi-worker
+
